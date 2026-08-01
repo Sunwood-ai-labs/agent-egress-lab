@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>Research Airlock</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <main class="shell">
+    <header class="masthead">
+      <div>
+        <p class="eyebrow">AGENT EGRESS LAB / CONTROL SURFACE</p>
+        <h1>RESEARCH<br><span>AIRLOCK</span></h1>
+      </div>
+      <div class="system-state">
+        <span class="pulse" aria-hidden="true"></span>
+        <div><strong>POLICY ONLINE</strong><small>outbound reads are constrained</small></div>
+      </div>
+    </header>
+
+    <section class="policy-strip" aria-label="Gateway policy">
+      <div><b>01</b><span>GET / HEAD ONLY</span></div>
+      <div><b>02</b><span>EXACT HOST ALLOWLIST</span></div>
+      <div><b>03</b><span>NO CREDENTIAL FORWARDING</span></div>
+      <div><b>04</b><span>HTTPS :443</span></div>
+    </section>
+
+    <section class="workspace">
+      <article class="lane lane-read">
+        <div class="lane-heading">
+          <span class="lane-number">A</span>
+          <div><p>OUTWARD LANE</p><h2>READ</h2></div>
+          <span class="permit">PERMITTED</span>
+        </div>
+
+        <label for="targetUrl">RESEARCH TARGET</label>
+        <div class="url-control">
+          <input id="targetUrl" value="https://example.com/" spellcheck="false">
+          <button id="getButton" data-testid="get-button" type="button">FETCH GET <span>↗</span></button>
+        </div>
+
+        <div class="telemetry">
+          <div><small>GATEWAY</small><strong id="getStatus">READY</strong></div>
+          <div><small>UPSTREAM</small><strong id="upstreamStatus">—</strong></div>
+          <div><small>PAYLOAD</small><strong id="payloadSize">—</strong></div>
+        </div>
+        <pre id="responseExcerpt" aria-live="polite">Waiting for an allowlisted research request.</pre>
+      </article>
+
+      <article class="lane lane-deny">
+        <div class="lane-heading">
+          <span class="lane-number">B</span>
+          <div><p>BOUNDARY TESTS</p><h2>DENY</h2></div>
+          <span class="permit blocked">ENFORCED</span>
+        </div>
+
+        <div class="test-row">
+          <div><small>WRITE ATTEMPT</small><strong>POST → allowlisted host</strong></div>
+          <button id="postButton" data-testid="post-button" type="button">PROBE POST</button>
+          <output id="postStatus">NOT TESTED</output>
+        </div>
+        <div class="test-row">
+          <div><small>SCOPE ATTEMPT</small><strong>GET → api.github.com</strong></div>
+          <button id="hostButton" data-testid="host-button" type="button">PROBE HOST</button>
+          <output id="hostStatus">NOT TESTED</output>
+        </div>
+
+        <div class="direct-test">
+          <div><small>BROWSER BYPASS CHECK</small><strong>Direct external navigation has no route</strong></div>
+          <a id="directExternal" data-testid="direct-external" href="https://example.com/" target="_blank" rel="noreferrer">TRY DIRECT ↗</a>
+        </div>
+      </article>
+    </section>
+
+    <footer>
+      <p><span>CONTROL MODEL</span> READ OUT / ACTIONS IN</p>
+      <p>FIXTURE <b>RFG-01</b> · <span id="clock">00:00:00 JST</span></p>
+    </footer>
+  </main>
+  <script src="/app.js"></script>
+</body>
+</html>

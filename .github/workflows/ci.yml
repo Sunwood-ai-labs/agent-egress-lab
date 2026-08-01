@@ -20,11 +20,12 @@ jobs:
       - name: Run unit tests
         run: python -m unittest discover -s tests -v
       - name: Compile Python source
-        run: python -m py_compile proxy.py
+        run: python -m py_compile proxy.py fetch_gateway.py
       - name: Validate Compose models
         run: |
           docker compose -f compose.yaml config --quiet
           docker compose -f offline-e2e.compose.yaml config --quiet
+          docker compose -f readonly-fetch.compose.yaml config --quiet
 
   integration:
     runs-on: ubuntu-latest
@@ -36,12 +37,16 @@ jobs:
       - name: Verify offline Playwright boundary
         shell: pwsh
         run: ./verify-offline-e2e.ps1
+      - name: Verify read-only research gateway
+        shell: pwsh
+        run: ./verify-readonly-fetch.ps1
       - name: Clean up containers
         if: always()
         shell: pwsh
         run: |
           docker compose down --remove-orphans --volumes
           docker compose -f offline-e2e.compose.yaml down --remove-orphans --volumes
+          docker compose -f readonly-fetch.compose.yaml down --remove-orphans --volumes
 
   docs:
     runs-on: ubuntu-latest

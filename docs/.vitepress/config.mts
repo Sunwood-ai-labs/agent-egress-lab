@@ -35,7 +35,8 @@ export default defineConfig({
             items: [
               { text: 'Getting started', link: '/guide/getting-started' },
               { text: 'Security model', link: '/guide/security-model' },
-              { text: 'Offline Playwright E2E', link: '/guide/offline-e2e' }
+              { text: 'Offline Playwright E2E', link: '/guide/offline-e2e' },
+              { text: 'Read-only research gateway', link: '/guide/readonly-fetch' }
             ]
           },
           {
@@ -65,7 +66,8 @@ export default defineConfig({
             items: [
               { text: 'はじめに', link: '/ja/guide/getting-started' },
               { text: 'セキュリティモデル', link: '/ja/guide/security-model' },
-              { text: 'Offline Playwright E2E', link: '/ja/guide/offline-e2e' }
+              { text: 'Offline Playwright E2E', link: '/ja/guide/offline-e2e' },
+              { text: '読み取り専用Research Gateway', link: '/ja/guide/readonly-fetch' }
             ]
           },
           {

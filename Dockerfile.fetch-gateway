@@ -1,0 +1,7 @@
+FROM python:3.13-alpine
+
+WORKDIR /app
+COPY fetch_gateway.py /app/fetch_gateway.py
+
+USER nobody
+CMD ["python", "/app/fetch_gateway.py"]

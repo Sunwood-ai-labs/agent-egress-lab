@@ -9,6 +9,8 @@ All notable changes to this project are documented here.
 - Interactive Offline Sprint Board sample app for the internal Playwright topology.
 - Reproducible create-and-complete task flow with four 1200×900 screenshot artifacts.
 - External-link click verification based on the main navigation request outcome.
+- Read-only HTTPS fetch gateway with exact-host allowlisting, fixed outbound headers, redirect revalidation, and response limits.
+- Research Airlock console and a five-screenshot Playwright policy verification flow.
 
 ### Fixed
 

@@ -13,10 +13,11 @@
   <p><a href="./README.md">English</a> · <strong>日本語</strong></p>
 </div>
 
-Agent Egress Labは、次の2つの隔離パターンを実際に動かして確認するための小さな実験環境です。
+Agent Egress Labは、次の3つの隔離パターンを実際に動かして確認するための小さな実験環境です。
 
 - AIエージェントの直接インターネット接続をなくし、許可リスト付きCONNECTプロキシだけを外向き経路にする
 - Playwright E2E Runnerから内部テストアプリには接続できる一方、公開インターネットには接続できない状態を作る
+- 内部のResearch Consoleから、許可済みホストへのHTTPS GET/HEADだけをread-only gateway経由で外向きに通す
 
 このリポジトリは教育・検証用のテストフィクスチャです。ネットワーク境界と残存リスクを可視化するものであり、本番向けセキュリティ製品ではありません。
 
@@ -28,13 +29,14 @@ Agent Egress Labは、次の2つの隔離パターンを実際に動かして確
 - PowerShell 7（`pwsh`）
 - 初回イメージビルドと許可対象の検証に使用するインターネット接続
 
-リポジトリをcloneして、2つの検証を実行します。
+リポジトリをcloneして、3つの検証を実行します。
 
 ```powershell
 git clone https://github.com/Sunwood-ai-labs/agent-egress-lab.git
 cd agent-egress-lab
 ./verify.ps1
 ./verify-offline-e2e.ps1
+./verify-readonly-fetch.ps1
 ```
 
 期待される結果：
@@ -46,6 +48,8 @@ cd agent-egress-lab
 | Agent → プロキシ経由で`example.com:443` | HTTP 403で拒否 |
 | Offline E2E Runner → 内部テストアプリ | 表示成功 |
 | Offline E2E Runner → 公開ページ | ブラウザエラーの証拠付きで失敗 |
+| Research Console → 許可済みHTTPS GET | fetch gateway経由で許可 |
+| Research Console → POSTまたは許可外ホスト | HTTP 405または403で拒否 |
 
 検証スクリプトは、一時的な証拠をgit管理外の`output/`と`artifacts/`へ保存します。`./verify.ps1`の後に`./serve-report.ps1`を実行すると、`http://127.0.0.1:4173`でローカルレポートを確認できます。
 
@@ -78,6 +82,7 @@ AgentとブラウザRunnerのネットワークから、標準の外向き経路
 - [はじめに](https://sunwood-ai-labs.github.io/agent-egress-lab/ja/guide/getting-started)
 - [セキュリティモデル](https://sunwood-ai-labs.github.io/agent-egress-lab/ja/guide/security-model)
 - [Offline Playwright E2E](https://sunwood-ai-labs.github.io/agent-egress-lab/ja/guide/offline-e2e)
+- [読み取り専用Research Gateway](https://sunwood-ai-labs.github.io/agent-egress-lab/ja/guide/readonly-fetch)
 - [v0.1.0 リリースノート](https://sunwood-ai-labs.github.io/agent-egress-lab/ja/releases/v0.1.0)
 - [v0.1.0 ウォークスルー](https://sunwood-ai-labs.github.io/agent-egress-lab/ja/guide/articles/v0.1.0-walkthrough)
 
@@ -86,10 +91,14 @@ AgentとブラウザRunnerのネットワークから、標準の外向き経路
 ```text
 compose.yaml                 Agentのデフォルト拒否と許可リスト付きプロキシ
 offline-e2e.compose.yaml     Playwrightの内部専用テスト環境
+readonly-fetch.compose.yaml  内部Consoleと読み取り専用外向きgateway
 demo/                        操作可能なOffline Sprint Boardサンプルアプリ
+research-console/            gatewayポリシーを試せる操作画面
 proxy.py                     最小構成のCONNECT専用テストプロキシ
+fetch_gateway.py             許可リスト付きHTTPS GET/HEAD gateway
 verify.ps1                   3つのegress制御を検証
 verify-offline-e2e.ps1       内部成功・外部失敗のブラウザ検証
+verify-readonly-fetch.ps1    読み取り許可・書き込み拒否のブラウザ検証
 report/                      ローカル検証レポートUI
 docs/                        日英VitePressドキュメントと構成図
 ```

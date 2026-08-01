@@ -13,10 +13,11 @@
   <p><strong>English</strong> · <a href="./README.ja.md">日本語</a></p>
 </div>
 
-Agent Egress Lab demonstrates two complementary containment patterns:
+Agent Egress Lab demonstrates three complementary containment patterns:
 
 - an AI-agent container with no direct internet route and a single allowlisted CONNECT-proxy path;
 - a Playwright E2E Runner that can reach an internal test app but has no route to the public internet.
+- a read-only fetch gateway that gives an internal research UI an allowlisted HTTPS GET/HEAD path while rejecting write methods.
 
 This repository is an educational test fixture. It makes the network boundary and its residual risk visible; it is not a production security product.
 
@@ -28,13 +29,14 @@ This repository is an educational test fixture. It makes the network boundary an
 - PowerShell 7 (`pwsh`)
 - Internet access for the allowlisted verification target and initial image builds
 
-Clone the repository and run both verification suites:
+Clone the repository and run all verification suites:
 
 ```powershell
 git clone https://github.com/Sunwood-ai-labs/agent-egress-lab.git
 cd agent-egress-lab
 ./verify.ps1
 ./verify-offline-e2e.ps1
+./verify-readonly-fetch.ps1
 ```
 
 Expected outcomes:
@@ -46,6 +48,8 @@ Expected outcomes:
 | Agent → `example.com:443` through the proxy | Denied with HTTP 403 |
 | Offline E2E Runner → internal test app | Loaded |
 | Offline E2E Runner → public page | Blocked with browser error evidence |
+| Research Console → allowlisted HTTPS GET | Allowed through the fetch gateway |
+| Research Console → POST or non-allowlisted host | Denied with HTTP 405 or 403 |
 
 The scripts save transient evidence under ignored `output/` and `artifacts/` directories. Run `./serve-report.ps1` after `./verify.ps1` to inspect the local report at `http://127.0.0.1:4173`.
 
@@ -78,6 +82,7 @@ See the full [security model](https://sunwood-ai-labs.github.io/agent-egress-lab
 - [Getting started](https://sunwood-ai-labs.github.io/agent-egress-lab/guide/getting-started)
 - [Security model](https://sunwood-ai-labs.github.io/agent-egress-lab/guide/security-model)
 - [Offline Playwright E2E](https://sunwood-ai-labs.github.io/agent-egress-lab/guide/offline-e2e)
+- [Read-only research gateway](https://sunwood-ai-labs.github.io/agent-egress-lab/guide/readonly-fetch)
 - [v0.1.0 release notes](https://sunwood-ai-labs.github.io/agent-egress-lab/releases/v0.1.0)
 - [v0.1.0 walkthrough](https://sunwood-ai-labs.github.io/agent-egress-lab/guide/articles/v0.1.0-walkthrough)
 
@@ -86,10 +91,14 @@ See the full [security model](https://sunwood-ai-labs.github.io/agent-egress-lab
 ```text
 compose.yaml                 Default-deny agent and allowlisted proxy
 offline-e2e.compose.yaml     Internal-only Playwright test environment
+readonly-fetch.compose.yaml  Internal console plus read-only outbound gateway
 demo/                        Interactive Offline Sprint Board sample app
+research-console/            Interactive gateway policy console
 proxy.py                     Minimal CONNECT-only test proxy
+fetch_gateway.py             Allowlisted HTTPS GET/HEAD gateway
 verify.ps1                   Three-control egress verification
 verify-offline-e2e.ps1       Internal-success/external-failure browser check
+verify-readonly-fetch.ps1    Read-allowed/write-denied browser verification
 report/                      Local verification report UI
 docs/                        Bilingual VitePress docs and architecture assets
 ```

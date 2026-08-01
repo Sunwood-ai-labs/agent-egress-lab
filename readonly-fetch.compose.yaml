@@ -1,0 +1,49 @@
+name: agent-egress-lab-readonly-fetch
+
+services:
+  fetch-gateway:
+    build:
+      context: .
+      dockerfile: Dockerfile.fetch-gateway
+    environment:
+      ALLOWED_FETCH_HOSTS: example.com
+      MAX_RESPONSE_BYTES: "524288"
+      UPSTREAM_TIMEOUT_SECONDS: "10"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8080/health', timeout=2)"]
+      interval: 2s
+      timeout: 3s
+      retries: 15
+    networks:
+      - research-internal
+      - research-outside
+
+  research-console:
+    image: nginx:1.29-alpine
+    depends_on:
+      fetch-gateway:
+        condition: service_healthy
+    volumes:
+      - ./research-console:/usr/share/nginx/html:ro
+      - ./research-console/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    networks:
+      - research-internal
+
+  e2e-runner:
+    build:
+      context: .
+      dockerfile: Dockerfile.readonly-e2e
+    depends_on:
+      fetch-gateway:
+        condition: service_healthy
+      research-console:
+        condition: service_started
+    volumes:
+      - ./artifacts:/app/artifacts
+    networks:
+      - research-internal
+
+networks:
+  research-internal:
+    internal: true
+  research-outside:
