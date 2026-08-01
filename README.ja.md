@@ -86,6 +86,7 @@ AgentとブラウザRunnerのネットワークから、標準の外向き経路
 ```text
 compose.yaml                 Agentのデフォルト拒否と許可リスト付きプロキシ
 offline-e2e.compose.yaml     Playwrightの内部専用テスト環境
+demo/                        操作可能なOffline Sprint Boardサンプルアプリ
 proxy.py                     最小構成のCONNECT専用テストプロキシ
 verify.ps1                   3つのegress制御を検証
 verify-offline-e2e.ps1       内部成功・外部失敗のブラウザ検証

@@ -86,6 +86,7 @@ See the full [security model](https://sunwood-ai-labs.github.io/agent-egress-lab
 ```text
 compose.yaml                 Default-deny agent and allowlisted proxy
 offline-e2e.compose.yaml     Internal-only Playwright test environment
+demo/                        Interactive Offline Sprint Board sample app
 proxy.py                     Minimal CONNECT-only test proxy
 verify.ps1                   Three-control egress verification
 verify-offline-e2e.ps1       Internal-success/external-failure browser check

@@ -4,7 +4,7 @@ services:
   local-app:
     image: nginx:1.29-alpine
     volumes:
-      - ./demo/local-page.html:/usr/share/nginx/html/index.html:ro
+      - ./demo:/usr/share/nginx/html:ro
     networks:
       - offline-e2e
 

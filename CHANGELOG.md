@@ -2,6 +2,18 @@
 
 All notable changes to this project are documented here.
 
+## Unreleased
+
+### Added
+
+- Interactive Offline Sprint Board sample app for the internal Playwright topology.
+- Reproducible create-and-complete task flow with four 1200×900 screenshot artifacts.
+- External-link click verification based on the main navigation request outcome.
+
+### Fixed
+
+- Avoided a false positive where the previous page's existing load state could be mistaken for a successful external navigation.
+
 ## [0.1.0] - 2026-08-01
 
 ### Added
