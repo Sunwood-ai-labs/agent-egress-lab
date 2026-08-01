@@ -1,0 +1,7 @@
+FROM python:3.13-alpine
+
+WORKDIR /app
+COPY research_worker.py /app/research_worker.py
+
+USER nobody
+CMD ["python", "/app/research_worker.py"]

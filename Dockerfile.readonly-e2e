@@ -3,5 +3,6 @@ FROM mcr.microsoft.com/playwright:v1.55.0-noble
 WORKDIR /app
 RUN npm init -y && npm install --omit=dev playwright@1.55.0
 COPY e2e/readonly-fetch.mjs /app/readonly-fetch.mjs
+COPY e2e/security-attack.mjs /app/security-attack.mjs
 
 CMD ["node", "/app/readonly-fetch.mjs"]

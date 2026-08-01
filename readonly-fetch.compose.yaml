@@ -7,8 +7,18 @@ services:
       dockerfile: Dockerfile.fetch-gateway
     environment:
       ALLOWED_FETCH_HOSTS: example.com
+      ALLOWED_FETCH_URLS: https://example.com/
+      ALLOW_FETCH_QUERY: "0"
       MAX_RESPONSE_BYTES: "524288"
       UPSTREAM_TIMEOUT_SECONDS: "10"
+    read_only: true
+    tmpfs:
+      - /tmp:size=16m,noexec,nosuid,nodev
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    pids_limit: 64
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8080/health', timeout=2)"]
       interval: 2s
@@ -23,11 +33,38 @@ services:
     depends_on:
       fetch-gateway:
         condition: service_healthy
+      research-worker:
+        condition: service_healthy
     volumes:
       - ./research-console:/usr/share/nginx/html:ro
       - ./research-console/nginx.conf:/etc/nginx/conf.d/default.conf:ro
     networks:
       - research-internal
+
+  research-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.research-worker
+    read_only: true
+    tmpfs:
+      - /tmp:size=16m,noexec,nosuid,nodev
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    pids_limit: 64
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8081/health', timeout=2)"]
+      interval: 2s
+      timeout: 3s
+      retries: 15
+    networks:
+      - research-internal
+
+  action-sink:
+    image: nginx:1.29-alpine
+    networks:
+      - approval-private
 
   e2e-runner:
     build:
@@ -47,3 +84,5 @@ networks:
   research-internal:
     internal: true
   research-outside:
+  approval-private:
+    internal: true

@@ -14,4 +14,6 @@ We will acknowledge a report when it is reviewed and coordinate disclosure after
 
 ## Scope and limitations
 
-The included CONNECT proxy is intentionally small and is not hardened for production. The lab demonstrates network topology and allowlisting; it does not provide payload inspection, DLP, identity-aware policy, credential isolation, or protection against exfiltration through an allowed destination.
+The included proxies and quarantine worker are intentionally small educational fixtures, not hardened production boundaries. External content remains untrusted after processing. The adversarial suite checks known policy paths, but cannot prove the absence of unknown container, kernel, TLS, parser, dependency, browser, or model vulnerabilities.
+
+The reference read-only Compose topology relies on all of these controls together: no application secrets or action tools in the research worker, an internal-only research network, an exact outbound URL allowlist, GET/HEAD only, arbitrary query rejection, DNS-address pinning, a read-only root filesystem, dropped Linux capabilities, and a separate approval network. Relaxing the exact URL policy to host-only browsing reopens URL path as a potential exfiltration channel.

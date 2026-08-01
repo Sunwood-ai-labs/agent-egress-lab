@@ -11,6 +11,15 @@ All notable changes to this project are documented here.
 - External-link click verification based on the main navigation request outcome.
 - Read-only HTTPS fetch gateway with exact-host allowlisting, fixed outbound headers, redirect revalidation, and response limits.
 - Research Airlock console and a five-screenshot Playwright policy verification flow.
+- Quarantined research worker that keeps external content labelled `UNTRUSTED` and has no action endpoint authority.
+- Six-case virtual intrusion lab with 1200×900 browser evidence and container/network assertions.
+
+### Security
+
+- Added exact URL allowlisting and default query rejection to close GET path/query exfiltration channels in the reference topology.
+- Pinned TLS connections to the public DNS addresses validated before each request.
+- Removed URL paths and queries from gateway decision logs.
+- Hardened the gateway and research worker with read-only filesystems, all Linux capabilities dropped, and `no-new-privileges`.
 
 ### Fixed
 

@@ -37,6 +37,7 @@ cd agent-egress-lab
 ./verify.ps1
 ./verify-offline-e2e.ps1
 ./verify-readonly-fetch.ps1
+./verify-security-attack.ps1
 ```
 
 Expected outcomes:
@@ -50,6 +51,7 @@ Expected outcomes:
 | Offline E2E Runner → public page | Blocked with browser error evidence |
 | Research Console → allowlisted HTTPS GET | Allowed through the fetch gateway |
 | Research Console → POST or non-allowlisted host | Denied with HTTP 405 or 403 |
+| Virtual prompt injection, query/path exfiltration, SSRF, or unapproved action | Contained with browser evidence |
 
 The scripts save transient evidence under ignored `output/` and `artifacts/` directories. Run `./serve-report.ps1` after `./verify.ps1` to inspect the local report at `http://127.0.0.1:4173`.
 
@@ -73,7 +75,9 @@ Playwright E2E Runner -- internal-only network --> local test app
 
 The lab removes the default outbound route from the agent and browser-runner networks. The agent reaches external services only through the dual-homed proxy, which accepts CONNECT requests for explicitly configured `host:port` targets. The offline E2E network has no external bridge at all.
 
-This limits reachable destinations, but it does not inspect payloads or make an allowed destination trustworthy. Prompt injection, compromised dependencies, or generated code can still exfiltrate data through an allowed API. Production systems also need scoped credentials, request-level policy, approvals, audit logs, rate limits, and hardened proxy infrastructure.
+External content remains untrusted. The quarantined research worker has no application secrets, write tools, or path to the approval network; it can only label and return tainted data. The fetch gateway uses an exact URL allowlist in the reference Compose file, rejects arbitrary query strings, connects to DNS addresses validated before the request, and omits URL paths and queries from logs. Human approval stays outside the research zone.
+
+`./verify-security-attack.ps1` runs six non-destructive attack simulations: indirect prompt injection, POST, GET query exfiltration, GET path exfiltration, private-IP SSRF, and an unapproved action. It also verifies a read-only root filesystem, dropped capabilities, absence of application secrets, blocked direct internet, and network separation from a mock action target. Passing these fixtures demonstrates the stated controls, not universal immunity from unknown container, kernel, parser, or model vulnerabilities.
 
 See the full [security model](https://sunwood-ai-labs.github.io/agent-egress-lab/guide/security-model) and [security policy](./SECURITY.md).
 
@@ -96,9 +100,11 @@ demo/                        Interactive Offline Sprint Board sample app
 research-console/            Interactive gateway policy console
 proxy.py                     Minimal CONNECT-only test proxy
 fetch_gateway.py             Allowlisted HTTPS GET/HEAD gateway
+research_worker.py           Unprivileged processor that preserves the UNTRUSTED label
 verify.ps1                   Three-control egress verification
 verify-offline-e2e.ps1       Internal-success/external-failure browser check
 verify-readonly-fetch.ps1    Read-allowed/write-denied browser verification
+verify-security-attack.ps1   Six-case virtual intrusion and container-boundary verification
 report/                      Local verification report UI
 docs/                        Bilingual VitePress docs and architecture assets
 ```

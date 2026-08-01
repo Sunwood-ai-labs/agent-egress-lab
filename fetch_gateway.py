@@ -11,9 +11,10 @@ import json
 import os
 import socket
 import socketserver
+import ssl
 from dataclasses import dataclass
 from http.server import BaseHTTPRequestHandler
-from urllib.parse import parse_qs, urljoin, urlsplit
+from urllib.parse import parse_qs, urljoin, urlsplit, urlunsplit
 
 
 LISTEN_HOST = "0.0.0.0"
@@ -46,6 +47,7 @@ class ValidatedTarget:
     host: str
     port: int
     path: str
+    addresses: tuple[str, ...] = ()
 
 
 def allowed_hosts() -> set[str]:
@@ -55,6 +57,21 @@ def allowed_hosts() -> set[str]:
         for item in raw.split(",")
         if item.strip()
     }
+
+
+def allowed_urls() -> set[str]:
+    raw = os.environ.get("ALLOWED_FETCH_URLS", "")
+    return {canonical_url(item.strip()) for item in raw.split(",") if item.strip()}
+
+
+def canonical_url(raw_url: str) -> str:
+    parsed = urlsplit(raw_url)
+    if not parsed.hostname:
+        return raw_url
+    host = parsed.hostname.rstrip(".").encode("idna").decode("ascii").lower()
+    port = parsed.port
+    authority = host if port in {None, 443} else f"{host}:{port}"
+    return urlunsplit((parsed.scheme.lower(), authority, parsed.path or "/", parsed.query, ""))
 
 
 def max_response_bytes() -> int:
@@ -89,6 +106,15 @@ def validate_target(raw_url: str, hosts: set[str] | None = None) -> ValidatedTar
     if host not in permitted:
         raise GatewayPolicyError(403, "host_denied", f"Host is not allowlisted: {host}")
 
+    if parsed.fragment:
+        raise GatewayPolicyError(400, "fragment_denied", "URL fragments are not accepted")
+    if parsed.query and os.environ.get("ALLOW_FETCH_QUERY", "0") != "1":
+        raise GatewayPolicyError(403, "query_denied", "Arbitrary query strings are disabled")
+
+    exact_urls = allowed_urls() if hosts is None else set()
+    if exact_urls and canonical_url(raw_url) not in exact_urls:
+        raise GatewayPolicyError(403, "target_denied", "URL is not in the exact target allowlist")
+
     path = parsed.path or "/"
     if parsed.query:
         path = f"{path}?{parsed.query}"
@@ -112,6 +138,36 @@ def require_public_dns(host: str, port: int) -> list[str]:
     return addresses
 
 
+class PinnedHTTPSConnection(http.client.HTTPSConnection):
+    """Connect only to DNS addresses that were validated before the request."""
+
+    def __init__(self, host: str, port: int, addresses: list[str], *, timeout: float) -> None:
+        super().__init__(host, port, timeout=timeout)
+        self._validated_addresses = tuple(addresses)
+
+    def connect(self) -> None:
+        last_error: OSError | ssl.SSLError | None = None
+        for address in self._validated_addresses:
+            raw_socket = None
+            try:
+                raw_socket = socket.create_connection(
+                    (address, self.port),
+                    self.timeout,
+                    self.source_address,
+                )
+                if self._tunnel_host:
+                    self.sock = raw_socket
+                    self._tunnel()
+                    raw_socket = self.sock
+                self.sock = self._context.wrap_socket(raw_socket, server_hostname=self.host)
+                return
+            except (OSError, ssl.SSLError) as exc:
+                last_error = exc
+                if raw_socket is not None:
+                    raw_socket.close()
+        raise OSError("No validated address could be reached") from last_error
+
+
 def decode_body(payload: bytes, content_type: str) -> str:
     charset = "utf-8"
     for parameter in content_type.split(";")[1:]:
@@ -133,10 +189,11 @@ def fetch_https(raw_url: str, method: str) -> dict[str, object]:
     current_url = raw_url
     for redirect_count in range(MAX_REDIRECTS + 1):
         target = validate_target(current_url)
-        require_public_dns(target.host, target.port)
-        connection = http.client.HTTPSConnection(
+        addresses = require_public_dns(target.host, target.port)
+        connection = PinnedHTTPSConnection(
             target.host,
             target.port,
+            addresses,
             timeout=upstream_timeout(),
         )
         try:
@@ -215,9 +272,9 @@ class FetchGatewayHandler(BaseHTTPRequestHandler):
         try:
             result = fetch_https(target, method)
             self.send_json(200, result, head_only=method == "HEAD")
-            print(f"ALLOW {method} {result['finalUrl']}", flush=True)
+            print(f"ALLOW {method} host={urlsplit(str(result['finalUrl'])).hostname}", flush=True)
         except GatewayPolicyError as exc:
-            print(f"DENY {method} {target} {exc.code}", flush=True)
+            print(f"DENY {method} host={urlsplit(target).hostname or '-'} reason={exc.code}", flush=True)
             self.send_json(
                 exc.status,
                 {"ok": False, "error": exc.code, "message": exc.message},

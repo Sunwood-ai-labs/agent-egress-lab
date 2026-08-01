@@ -16,12 +16,33 @@ class FetchGatewayPolicyTests(unittest.TestCase):
 
     def test_https_allowlisted_target_is_accepted(self) -> None:
         target = fetch_gateway.validate_target(
-            "https://example.com/path?q=research",
+            "https://example.com/path",
             {"example.com"},
         )
         self.assertEqual(target.host, "example.com")
         self.assertEqual(target.port, 443)
-        self.assertEqual(target.path, "/path?q=research")
+        self.assertEqual(target.path, "/path")
+
+    def test_arbitrary_query_is_denied_by_default(self) -> None:
+        with patch.dict(os.environ, {"ALLOW_FETCH_QUERY": "0"}, clear=False):
+            with self.assertRaises(fetch_gateway.GatewayPolicyError) as raised:
+                fetch_gateway.validate_target("https://example.com/?q=CANARY_SECRET", {"example.com"})
+        self.assertEqual(raised.exception.code, "query_denied")
+
+    def test_exact_target_allowlist_blocks_path_channel(self) -> None:
+        with patch.dict(
+            os.environ,
+            {
+                "ALLOWED_FETCH_HOSTS": "example.com",
+                "ALLOWED_FETCH_URLS": "https://example.com/",
+                "ALLOW_FETCH_QUERY": "0",
+            },
+            clear=False,
+        ):
+            fetch_gateway.validate_target("https://example.com/")
+            with self.assertRaises(fetch_gateway.GatewayPolicyError) as raised:
+                fetch_gateway.validate_target("https://example.com/CANARY_SECRET")
+        self.assertEqual(raised.exception.code, "target_denied")
 
     def test_http_userinfo_nonstandard_port_and_other_host_are_denied(self) -> None:
         cases = (
@@ -51,9 +72,13 @@ class FetchGatewayPolicyTests(unittest.TestCase):
         connection.getresponse.return_value = response
 
         with (
-            patch.dict(os.environ, {"ALLOWED_FETCH_HOSTS": "example.com"}, clear=False),
-            patch.object(fetch_gateway, "require_public_dns"),
-            patch.object(fetch_gateway.http.client, "HTTPSConnection", return_value=connection),
+            patch.dict(
+                os.environ,
+                {"ALLOWED_FETCH_HOSTS": "example.com", "ALLOWED_FETCH_URLS": ""},
+                clear=False,
+            ),
+            patch.object(fetch_gateway, "require_public_dns", return_value=["93.184.216.34"]),
+            patch.object(fetch_gateway, "PinnedHTTPSConnection", return_value=connection) as pinned,
         ):
             result = fetch_gateway.fetch_https("https://example.com/research", "GET")
 
@@ -61,6 +86,7 @@ class FetchGatewayPolicyTests(unittest.TestCase):
         self.assertEqual(set(headers), {"User-Agent", "Accept", "Connection"})
         self.assertFalse(any(name.lower() in {"authorization", "cookie"} for name in headers))
         self.assertFalse(result["forwardedCredentials"])
+        self.assertEqual(pinned.call_args.args[2], ["93.184.216.34"])
 
 
 if __name__ == "__main__":

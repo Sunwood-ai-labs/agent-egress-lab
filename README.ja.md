@@ -37,6 +37,7 @@ cd agent-egress-lab
 ./verify.ps1
 ./verify-offline-e2e.ps1
 ./verify-readonly-fetch.ps1
+./verify-security-attack.ps1
 ```
 
 期待される結果：
@@ -50,6 +51,7 @@ cd agent-egress-lab
 | Offline E2E Runner → 公開ページ | ブラウザエラーの証拠付きで失敗 |
 | Research Console → 許可済みHTTPS GET | fetch gateway経由で許可 |
 | Research Console → POSTまたは許可外ホスト | HTTP 405または403で拒否 |
+| 仮想プロンプトインジェクション・GET持ち出し・SSRF・未承認操作 | ブラウザ証拠付きで封じ込め |
 
 検証スクリプトは、一時的な証拠をgit管理外の`output/`と`artifacts/`へ保存します。`./verify.ps1`の後に`./serve-report.ps1`を実行すると、`http://127.0.0.1:4173`でローカルレポートを確認できます。
 
@@ -73,7 +75,9 @@ Playwright E2E Runner -- 内部専用network --> local test app
 
 AgentとブラウザRunnerのネットワークから、標準の外向き経路を取り除きます。Agentが外部サービスへ接続する唯一の経路は、明示的な`host:port`だけを許可する二重接続のプロキシです。Offline E2Eネットワークには外部ブリッジ自体がありません。
 
-到達先は限定できますが、ペイロードの内容までは検査せず、許可した接続先を安全にするものでもありません。プロンプトインジェクション、侵害された依存関係、生成コードなどは、許可済みAPIを通じてデータを送信できる可能性があります。本番環境では、スコープを絞った認証情報、リクエスト単位のポリシー、承認、監査ログ、レート制限、堅牢なプロキシが別途必要です。
+外部コンテンツは最後まで未信頼です。隔離されたResearch Workerはアプリケーション秘密、書き込みツール、承認側ネットワークへの経路を持たず、汚染されたデータを`UNTRUSTED`と明示して返すだけです。参照Composeのfetch gatewayはURL完全一致許可、任意クエリ拒否、DNS検査済みIPへの固定接続、ログからのパス・クエリ除去を行います。人間による承認はResearch Zoneの外側に残します。
+
+`./verify-security-attack.ps1`は、間接プロンプトインジェクション、POST、GETクエリ持ち出し、GETパス持ち出し、内部IP SSRF、未承認アクションという6つの非破壊攻撃を再現します。さらに読み取り専用root filesystem、Linux capability全削除、アプリケーション秘密なし、直接インターネット遮断、模擬実行先とのネットワーク分離を検証します。これは記載した制御の確認であり、未知のコンテナ・カーネル・パーサー・モデル脆弱性まで不存在と証明するものではありません。
 
 詳しくは[セキュリティモデル](https://sunwood-ai-labs.github.io/agent-egress-lab/ja/guide/security-model)と[`SECURITY.md`](./SECURITY.md)を参照してください。
 
@@ -96,9 +100,11 @@ demo/                        操作可能なOffline Sprint Boardサンプルア�
 research-console/            gatewayポリシーを試せる操作画面
 proxy.py                     最小構成のCONNECT専用テストプロキシ
 fetch_gateway.py             許可リスト付きHTTPS GET/HEAD gateway
+research_worker.py           UNTRUSTEDラベルを維持する無権限processor
 verify.ps1                   3つのegress制御を検証
 verify-offline-e2e.ps1       内部成功・外部失敗のブラウザ検証
 verify-readonly-fetch.ps1    読み取り許可・書き込み拒否のブラウザ検証
+verify-security-attack.ps1   6ケースの仮想侵入・コンテナ境界検証
 report/                      ローカル検証レポートUI
 docs/                        日英VitePressドキュメントと構成図
 ```

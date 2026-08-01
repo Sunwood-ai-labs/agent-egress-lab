@@ -32,7 +32,7 @@ foreach ($artifact in @($resultPath) + @($screenshotNames | ForEach-Object { Joi
 
 Push-Location $projectRoot
 try {
-    docker compose -f $composePath up -d --build fetch-gateway research-console | Out-Host
+    docker compose -f $composePath up -d --build --force-recreate fetch-gateway research-worker research-console | Out-Host
     docker compose -f $composePath build e2e-runner | Out-Host
     $runnerOutput = docker compose -f $composePath run --rm e2e-runner
     if ($LASTEXITCODE -ne 0) { throw "Playwright runner failed with exit code $LASTEXITCODE." }

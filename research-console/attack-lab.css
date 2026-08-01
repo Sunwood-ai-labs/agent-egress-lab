@@ -1,0 +1,20 @@
+:root { font-family: Inter, "Noto Sans JP", system-ui, sans-serif; color: #18201d; background: #e9eee9; }
+* { box-sizing: border-box; }
+body { margin: 0; min-height: 100vh; display: grid; place-items: center; background: radial-gradient(circle at 20% 0%, #fff 0, #e9eee9 45%, #dce5de 100%); }
+main { width: 1120px; min-height: 820px; padding: 34px 42px; background: #f8faf7; border: 2px solid #17201d; box-shadow: 14px 14px 0 #17201d; }
+header, footer { display: flex; align-items: center; justify-content: space-between; }
+header p { margin: 0; color: #68756e; font: 700 13px monospace; letter-spacing: .13em; }
+h1 { margin: 5px 0 20px; font-size: 46px; letter-spacing: -.04em; }
+#verdict { padding: 12px 18px; border: 2px solid #17201d; font: 800 16px monospace; }
+#verdict.ok { color: #fff; background: #19734a; }
+.model { display: flex; align-items: stretch; gap: 9px; margin-bottom: 24px; }
+.zone { flex: 1; padding: 14px; border: 1px solid #87938c; background: #fff; font-weight: 800; }
+.zone small { font-weight: 500; color: #67736c; }.zone.danger { border-top: 6px solid #d7563c; }.zone.safe { border-top: 6px solid #19734a; }
+.model > span { align-self: center; font-size: 24px; }.model .wall { color: #d7563c; font-size: 35px; }
+.tests { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+article { display: grid; grid-template-columns: 1fr auto; gap: 7px 12px; padding: 15px 17px; border: 1px solid #a9b2ad; background: #fff; }
+article b { font-size: 17px; } article span { font: 800 13px monospace; color: #7b8580; } article small { grid-column: 1 / -1; color: #68756e; }
+article.passed { border-left: 8px solid #19734a; background: #effaf4; } article.passed span { color: #19734a; }
+article.failed { border-left: 8px solid #c43e31; }
+button { width: 100%; margin: 20px 0; padding: 16px; border: 0; color: #fff; background: #17201d; font-size: 17px; font-weight: 800; cursor: pointer; }
+footer { padding-top: 15px; border-top: 2px solid #17201d; font: 800 13px monospace; letter-spacing: .06em; }
