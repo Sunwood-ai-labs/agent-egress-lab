@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Research Airlock / Live Attack Evidence</title>
+  <link rel="stylesheet" href="/attack-evidence.css">
+</head>
+<body>
+  <main>
+    <header>
+      <div>
+        <p>RESEARCH AIRLOCK / LIVE EVIDENCE</p>
+        <h1 id="caseTitle">検証を実行中</h1>
+      </div>
+      <strong id="verdict">RUNNING</strong>
+    </header>
+
+    <section class="meta" aria-label="実行メタデータ">
+      <div><small>EXECUTED AT</small><span id="executedAt">-</span></div>
+      <div><small>RUNTIME</small><span>Playwright → Docker network</span></div>
+      <div><small>CASE</small><span id="caseId">-</span></div>
+    </section>
+
+    <section class="exchange">
+      <article>
+        <div class="label">ACTUAL REQUEST</div>
+        <pre id="request">waiting...</pre>
+      </article>
+      <div class="arrow">↓</div>
+      <article>
+        <div class="label">RAW RESPONSE</div>
+        <pre id="response">waiting...</pre>
+      </article>
+    </section>
+
+    <section class="assertion">
+      <div><small>ASSERTION</small><p id="assertion">-</p></div>
+      <strong id="result">WAITING</strong>
+    </section>
+
+    <footer>
+      <span>CANARY_SECRET = TEST FIXTURE / NOT A REAL SECRET</span>
+      <span id="footerStatus">REQUEST IN FLIGHT</span>
+    </footer>
+  </main>
+  <script src="/attack-evidence.js"></script>
+</body>
+</html>

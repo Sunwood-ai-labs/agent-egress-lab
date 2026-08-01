@@ -26,8 +26,10 @@ try {
   result.cases = await page.evaluate(() => window.__attackLabResult);
   await page.screenshot({ path: `${artifactDirectory}/02-attacks-contained.png`, animations: 'disabled' });
   for (const [caseName, screenshotName] of caseScreenshots) {
-    await page.locator(`[data-test="${caseName}"]`).click();
-    await page.locator('#caseTitle').filter({ hasText: caseName === 'injection' ? '悪意ある指示' : caseName === 'post' ? 'POST送信' : caseName === 'query' ? 'GETクエリ持ち出し' : caseName === 'path' ? 'GETパス持ち出し' : caseName === 'ssrf' ? '内部IP SSRF' : '未承認アクション' }).waitFor();
+    await page.goto(`http://research-console/attack-evidence.html?case=${caseName}`, { waitUntil: 'load', timeout: 15_000 });
+    await page.locator('body[data-live="complete"]').waitFor({ timeout: 15_000 });
+    const evidence = await page.evaluate(() => window.__liveEvidence);
+    if (!evidence?.passed) throw new Error(`Live evidence failed for ${caseName}`);
     await page.screenshot({ path: `${artifactDirectory}/${screenshotName}`, animations: 'disabled' });
   }
 
