@@ -37,7 +37,7 @@ The result is saved to `output/verification.log`.
 
 ## Architecture
 
-![Offline E2E Runner security boundary](docs/architecture/offline-e2e-security-boundary.png)
+![Offline E2E Runner security boundary](docs/architecture/offline-e2e-security-boundary.jpg)
 
 The diagram's editable source is [`docs/architecture/offline-e2e-security-boundary.drawio`](docs/architecture/offline-e2e-security-boundary.drawio).
 
