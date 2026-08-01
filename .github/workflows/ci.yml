@@ -20,7 +20,7 @@ jobs:
       - name: Run unit tests
         run: python -m unittest discover -s tests -v
       - name: Compile Python source
-        run: python -m py_compile proxy.py fetch_gateway.py
+        run: python -m py_compile proxy.py fetch_gateway.py research_worker.py
       - name: Validate Compose models
         run: |
           docker compose -f compose.yaml config --quiet
@@ -40,6 +40,9 @@ jobs:
       - name: Verify read-only research gateway
         shell: pwsh
         run: ./verify-readonly-fetch.ps1
+      - name: Verify virtual intrusion containment
+        shell: pwsh
+        run: ./verify-security-attack.ps1
       - name: Clean up containers
         if: always()
         shell: pwsh

@@ -41,7 +41,7 @@ try {
     Assert-LastExitCode 'Failed to start security lab'
     docker compose -f $composePath build e2e-runner | Out-Host
     Assert-LastExitCode 'Failed to build Playwright runner'
-    docker compose -f $composePath run --rm e2e-runner node /app/security-attack.mjs | Out-Host
+    docker compose -f $composePath run --rm --no-deps e2e-runner node /app/security-attack.mjs | Out-Host
     Assert-LastExitCode 'Virtual intrusion browser suite failed'
 
     $workerId = docker compose -f $composePath ps -q research-worker
