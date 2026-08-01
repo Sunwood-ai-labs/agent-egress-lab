@@ -1,0 +1,7 @@
+FROM mcr.microsoft.com/playwright:v1.55.0-noble
+
+WORKDIR /app
+RUN npm init -y && npm install --omit=dev playwright@1.55.0
+COPY e2e/capture.mjs /app/capture.mjs
+
+CMD ["node", "/app/capture.mjs"]

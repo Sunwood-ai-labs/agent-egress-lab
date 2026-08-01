@@ -2,6 +2,8 @@
 
 A small Docker lab that demonstrates default-deny outbound networking for an AI agent runner.
 
+It also includes an offline Playwright E2E Runner. The browser can open a local app on the same internal Docker network, while an external page fails to load and produces a real Chromium error screenshot.
+
 The agent container is attached only to an internal Docker network. It cannot reach the internet directly. A dual-homed CONNECT proxy provides the only outbound path and permits only an explicit host and port allowlist.
 
 ## Verified cases
@@ -18,6 +20,19 @@ Run the verification:
 ./verify.ps1
 ```
 
+Run the offline browser verification:
+
+```powershell
+./verify-offline-e2e.ps1
+```
+
+The offline browser check verifies both sides of the boundary:
+
+- `http://local-app/` loads inside the internal Docker network.
+- `https://example.com/` fails because the E2E Runner has no internet route.
+
+![Chromium showing No internet from the offline E2E Runner](docs/images/offline-e2e-external-error.png)
+
 The result is saved to `output/verification.log`.
 
 ## Architecture
@@ -27,6 +42,9 @@ agent-runner -- internal sandbox network --> egress-proxy --> internet
                                                 |
                                                 +-- allow api.github.com:443
                                                 +-- deny everything else
+
+Playwright E2E Runner -- internal-only network --> local test app
+                     X no route to the internet
 ```
 
 ## Important limitation

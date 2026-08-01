@@ -1,0 +1,22 @@
+services:
+  local-app:
+    image: nginx:1.29-alpine
+    volumes:
+      - ./demo/local-page.html:/usr/share/nginx/html/index.html:ro
+    networks:
+      - offline-e2e
+
+  e2e-runner:
+    build:
+      context: .
+      dockerfile: Dockerfile.e2e
+    depends_on:
+      - local-app
+    volumes:
+      - ./artifacts:/app/artifacts
+    networks:
+      - offline-e2e
+
+networks:
+  offline-e2e:
+    internal: true
