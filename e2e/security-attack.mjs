@@ -9,6 +9,14 @@ const browser = await chromium.launch({ headless: true });
 const context = await browser.newContext({ viewport });
 const page = await context.newPage();
 const result = { verifiedAt: new Date().toISOString(), viewport, cases: {}, network: {} };
+const caseScreenshots = [
+  ['injection', '03-injection-contained.png'],
+  ['post', '04-post-contained.png'],
+  ['query', '05-query-contained.png'],
+  ['path', '06-path-contained.png'],
+  ['ssrf', '07-ssrf-contained.png'],
+  ['action', '08-action-contained.png'],
+];
 
 try {
   await page.goto('http://research-console/attack-lab.html', { waitUntil: 'load', timeout: 15_000 });
@@ -17,6 +25,11 @@ try {
   await page.locator('#verdict').filter({ hasText: 'CONTAINED' }).waitFor({ timeout: 20_000 });
   result.cases = await page.evaluate(() => window.__attackLabResult);
   await page.screenshot({ path: `${artifactDirectory}/02-attacks-contained.png`, animations: 'disabled' });
+  for (const [caseName, screenshotName] of caseScreenshots) {
+    await page.locator(`[data-test="${caseName}"]`).click();
+    await page.locator('#caseTitle').filter({ hasText: caseName === 'injection' ? '悪意ある指示' : caseName === 'post' ? 'POST送信' : caseName === 'query' ? 'GETクエリ持ち出し' : caseName === 'path' ? 'GETパス持ち出し' : caseName === 'ssrf' ? '内部IP SSRF' : '未承認アクション' }).waitFor();
+    await page.screenshot({ path: `${artifactDirectory}/${screenshotName}`, animations: 'disabled' });
+  }
 
   result.network.actionSinkReachable = await page.evaluate(async () => {
     try { await fetch('http://action-sink/', { mode: 'no-cors', signal: AbortSignal.timeout(4000) }); return true; }

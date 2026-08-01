@@ -16,5 +16,8 @@ article { display: grid; grid-template-columns: 1fr auto; gap: 7px 12px; padding
 article b { font-size: 17px; } article span { font: 800 13px monospace; color: #7b8580; } article small { grid-column: 1 / -1; color: #68756e; }
 article.passed { border-left: 8px solid #19734a; background: #effaf4; } article.passed span { color: #19734a; }
 article.failed { border-left: 8px solid #c43e31; }
-button { width: 100%; margin: 20px 0; padding: 16px; border: 0; color: #fff; background: #17201d; font-size: 17px; font-weight: 800; cursor: pointer; }
+article.passed { cursor: pointer; } article.selected { outline: 3px solid #efb72d; outline-offset: 2px; }
+.case-detail { display: grid; grid-template-columns: 230px 1fr auto; align-items: center; gap: 18px; margin-top: 16px; padding: 14px 17px; border: 2px solid #17201d; background: #fff8db; }
+.case-detail small { color: #7b6231; font: 800 11px monospace; letter-spacing: .1em; }.case-detail h2 { margin: 3px 0 0; font-size: 20px; }.case-detail p { margin: 0; color: #4f5a54; }.case-detail strong { color: #19734a; font: 800 14px monospace; }
+button { width: 100%; margin: 16px 0; padding: 14px; border: 0; color: #fff; background: #17201d; font-size: 17px; font-weight: 800; cursor: pointer; }
 footer { padding-top: 15px; border-top: 2px solid #17201d; font: 800 13px monospace; letter-spacing: .06em; }

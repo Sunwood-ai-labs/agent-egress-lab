@@ -1,5 +1,22 @@
 const cases = {};
 const row = (name) => document.querySelector(`[data-test="${name}"]`);
+const casePolicies = {
+  injection: ['悪意ある指示', '外部文中の命令は未信頼データ。Workerには実行権限を与えない。'],
+  post: ['POST送信', '外向きGatewayはGET / HEADだけを許可し、書き込みメソッドを拒否。'],
+  query: ['GETクエリ持ち出し', '任意のquery stringを既定拒否し、GET経由の持ち出しを遮断。'],
+  path: ['GETパス持ち出し', 'URL完全一致の許可リストで、任意パスへの持ち出しを遮断。'],
+  ssrf: ['内部IP SSRF', '許可外hostとnon-public addressへのfetchをGatewayで拒否。'],
+  action: ['未承認アクション', 'Research Workerはaction authorityを持たず、実行要求を拒否。'],
+};
+
+function selectCase(name) {
+  if (!cases[name]) return;
+  document.querySelectorAll('[data-test]').forEach((item) => item.classList.remove('selected'));
+  row(name).classList.add('selected');
+  document.querySelector('#caseTitle').textContent = casePolicies[name][0];
+  document.querySelector('#casePolicy').textContent = casePolicies[name][1];
+  document.querySelector('#caseEvidence').textContent = cases[name].detail;
+}
 
 function record(name, passed, detail) {
   cases[name] = { passed, detail };
@@ -52,4 +69,9 @@ document.querySelector('#run').addEventListener('click', async () => {
   document.querySelector('#verdict').textContent = passed === 6 ? 'CONTAINED' : 'REVIEW';
   document.querySelector('#verdict').className = passed === 6 ? 'ok' : 'bad';
   window.__attackLabResult = cases;
+  selectCase('injection');
+});
+
+document.querySelectorAll('[data-test]').forEach((item) => {
+  item.addEventListener('click', () => selectCase(item.dataset.test));
 });

@@ -6,7 +6,16 @@ $projectRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
 $composePath = Join-Path $projectRoot 'readonly-fetch.compose.yaml'
 $artifactDirectory = Join-Path $projectRoot 'artifacts\security-attack'
 $resultPath = Join-Path $artifactDirectory 'result.json'
-$screenshots = @('01-before-attack.png', '02-attacks-contained.png')
+$screenshots = @(
+    '01-before-attack.png',
+    '02-attacks-contained.png',
+    '03-injection-contained.png',
+    '04-post-contained.png',
+    '05-query-contained.png',
+    '06-path-contained.png',
+    '07-ssrf-contained.png',
+    '08-action-contained.png'
+)
 
 function Assert-LastExitCode([string]$Message) {
     if ($LASTEXITCODE -ne 0) { throw "$Message (exit $LASTEXITCODE)" }
