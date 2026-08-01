@@ -1,0 +1,8 @@
+FROM python:3.13-alpine
+
+WORKDIR /app
+COPY proxy.py /app/proxy.py
+
+USER nobody
+EXPOSE 8080
+CMD ["python", "/app/proxy.py"]

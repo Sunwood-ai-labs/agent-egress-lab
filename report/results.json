@@ -1,0 +1,25 @@
+{
+    "verifiedAt":  "2026-08-01T11:58:21.4683100+09:00",
+    "result":  "3/3 controls verified",
+    "tests":  [
+                  {
+                      "path":  "Direct internet",
+                      "target":  "api.github.com:443",
+                      "outcome":  "BLOCKED",
+                      "status":  "pass"
+                  },
+                  {
+                      "path":  "Allowlisted proxy",
+                      "target":  "api.github.com:443",
+                      "outcome":  "ALLOWED",
+                      "status":  "pass"
+                  },
+                  {
+                      "path":  "Unlisted proxy",
+                      "target":  "example.com:443",
+                      "outcome":  "DENIED",
+                      "status":  "pass"
+                  }
+              ],
+    "limitation":  "Data can still leave through an allowed destination."
+}

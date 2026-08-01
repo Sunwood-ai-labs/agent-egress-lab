@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Verified Agent Egress Lab results">
+  <title>Agent Egress Lab — Verification</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <main class="shell">
+    <header class="masthead">
+      <div>
+        <p class="eyebrow">SUNWOOD AI LABS / SECURITY EXPERIMENT 003</p>
+        <h1>Agent Egress<br>Lab</h1>
+      </div>
+      <div class="seal" aria-label="verification complete">
+        <span>VERIFIED</span>
+        <strong>3/3</strong>
+      </div>
+    </header>
+
+    <section class="architecture" aria-label="network architecture">
+      <div class="node agent">
+        <small>INTERNAL NETWORK</small>
+        <strong>Agent Runner</strong>
+        <span>no default internet route</span>
+      </div>
+      <div class="route">
+        <span>ONLY PATH</span>
+        <i aria-hidden="true"></i>
+      </div>
+      <div class="node proxy">
+        <small>POLICY BOUNDARY</small>
+        <strong>Egress Proxy</strong>
+        <span>host:port allowlist</span>
+      </div>
+      <div class="route">
+        <span>FILTERED</span>
+        <i aria-hidden="true"></i>
+      </div>
+      <div class="node outside">
+        <small>OUTSIDE</small>
+        <strong>Internet</strong>
+        <span>default deny</span>
+      </div>
+    </section>
+
+    <section class="results" aria-labelledby="results-title">
+      <div class="section-heading">
+        <h2 id="results-title">LIVE VERIFICATION</h2>
+        <time id="verifiedAt">loading</time>
+      </div>
+      <div class="test-grid" id="testGrid" aria-live="polite"></div>
+    </section>
+
+    <footer>
+      <div class="limit-mark">!</div>
+      <div>
+        <strong>RESIDUAL RISK</strong>
+        <p id="limitation">Loading verification data…</p>
+      </div>
+      <p class="source">SOURCE: docker compose + proxy audit log</p>
+    </footer>
+  </main>
+  <script src="./app.js"></script>
+</body>
+</html>

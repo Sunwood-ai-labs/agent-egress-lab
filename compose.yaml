@@ -1,0 +1,24 @@
+services:
+  agent-runner:
+    image: curlimages/curl:8.15.0
+    environment:
+      HTTPS_PROXY: http://egress-proxy:8080
+      HTTP_PROXY: http://egress-proxy:8080
+      NO_PROXY: localhost,127.0.0.1
+    networks:
+      - sandbox
+
+  egress-proxy:
+    build:
+      context: .
+      dockerfile: Dockerfile.proxy
+    environment:
+      ALLOWED_CONNECT_TARGETS: api.github.com:443
+    networks:
+      - sandbox
+      - outside
+
+networks:
+  sandbox:
+    internal: true
+  outside: {}
