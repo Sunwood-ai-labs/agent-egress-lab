@@ -1,3 +1,5 @@
+name: agent-egress-lab
+
 services:
   agent-runner:
     image: curlimages/curl:8.15.0

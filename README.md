@@ -1,45 +1,59 @@
-# Agent Egress Lab
+<div align="center">
+  <img src="./docs/public/release-header-v0.1.0.svg" alt="Agent Egress Lab v0.1.0" width="100%">
+  <h1>Agent Egress Lab</h1>
+  <p><strong>A reproducible Docker lab for default-deny AI-agent egress and offline browser testing.</strong></p>
 
-A small Docker lab that demonstrates default-deny outbound networking for an AI agent runner.
+  <p>
+    <a href="https://github.com/Sunwood-ai-labs/agent-egress-lab/releases/tag/v0.1.0"><img alt="Release v0.1.0" src="https://img.shields.io/badge/release-v0.1.0-c7ff3d?style=flat-square&labelColor=111815"></a>
+    <a href="https://github.com/Sunwood-ai-labs/agent-egress-lab/actions/workflows/ci.yml"><img alt="CI" src="https://img.shields.io/github/actions/workflow/status/Sunwood-ai-labs/agent-egress-lab/ci.yml?branch=main&style=flat-square&label=CI"></a>
+    <a href="https://sunwood-ai-labs.github.io/agent-egress-lab/"><img alt="Documentation" src="https://img.shields.io/badge/docs-GitHub%20Pages-1f6feb?style=flat-square"></a>
+    <a href="./LICENSE"><img alt="MIT License" src="https://img.shields.io/badge/license-MIT-blue?style=flat-square"></a>
+  </p>
 
-It also includes an offline Playwright E2E Runner. The browser can open a local app on the same internal Docker network, while an external page fails to load and produces a real Chromium error screenshot.
+  <p><strong>English</strong> · <a href="./README.ja.md">日本語</a></p>
+</div>
 
-The agent container is attached only to an internal Docker network. It cannot reach the internet directly. A dual-homed CONNECT proxy provides the only outbound path and permits only an explicit host and port allowlist.
+Agent Egress Lab demonstrates two complementary containment patterns:
 
-## Verified cases
+- an AI-agent container with no direct internet route and a single allowlisted CONNECT-proxy path;
+- a Playwright E2E Runner that can reach an internal test app but has no route to the public internet.
 
-| Path | Expected result |
-| --- | --- |
-| Agent to internet directly | Blocked |
-| Agent to `api.github.com:443` through proxy | Allowed |
-| Agent to `example.com:443` through proxy | Denied with HTTP 403 |
+This repository is an educational test fixture. It makes the network boundary and its residual risk visible; it is not a production security product.
 
-Run the verification:
+## 🚀 Quick start
+
+### Prerequisites
+
+- Docker Engine or Docker Desktop with Docker Compose v2
+- PowerShell 7 (`pwsh`)
+- Internet access for the allowlisted verification target and initial image builds
+
+Clone the repository and run both verification suites:
 
 ```powershell
+git clone https://github.com/Sunwood-ai-labs/agent-egress-lab.git
+cd agent-egress-lab
 ./verify.ps1
-```
-
-Run the offline browser verification:
-
-```powershell
 ./verify-offline-e2e.ps1
 ```
 
-The offline browser check verifies both sides of the boundary:
+Expected outcomes:
 
-- `http://local-app/` loads inside the internal Docker network.
-- `https://example.com/` fails because the E2E Runner has no internet route.
+| Control | Expected result |
+| --- | --- |
+| Agent → internet directly | Blocked |
+| Agent → `api.github.com:443` through the proxy | Allowed |
+| Agent → `example.com:443` through the proxy | Denied with HTTP 403 |
+| Offline E2E Runner → internal test app | Loaded |
+| Offline E2E Runner → public page | Blocked with browser error evidence |
 
-![Chromium showing No internet from the offline E2E Runner](docs/images/offline-e2e-external-error.png)
+The scripts save transient evidence under ignored `output/` and `artifacts/` directories. Run `./serve-report.ps1` after `./verify.ps1` to inspect the local report at `http://127.0.0.1:4173`.
 
-The result is saved to `output/verification.log`.
-
-## Architecture
+## 🧭 Architecture
 
 ![Offline E2E Runner security boundary](docs/architecture/offline-e2e-security-boundary.jpg)
 
-The diagram's editable source is [`docs/architecture/offline-e2e-security-boundary.drawio`](docs/architecture/offline-e2e-security-boundary.drawio).
+The editable source is [`docs/architecture/offline-e2e-security-boundary.drawio`](docs/architecture/offline-e2e-security-boundary.drawio). An SVG export is included for high-resolution reuse.
 
 ```text
 agent-runner -- internal sandbox network --> egress-proxy --> internet
@@ -51,8 +65,38 @@ Playwright E2E Runner -- internal-only network --> local test app
                      X no route to the internet
 ```
 
-## Important limitation
+## 🛡️ Security model
 
-An allowlist narrows the outbound surface, but it does not make an allowed destination safe. Data can still be sent through an allowed API. Production systems also need scoped credentials, request-level policy, audit logs, and approval for high-impact actions.
+The lab removes the default outbound route from the agent and browser-runner networks. The agent reaches external services only through the dual-homed proxy, which accepts CONNECT requests for explicitly configured `host:port` targets. The offline E2E network has no external bridge at all.
 
-The included proxy is a deliberately small test fixture. Do not use it as a production security boundary.
+This limits reachable destinations, but it does not inspect payloads or make an allowed destination trustworthy. Prompt injection, compromised dependencies, or generated code can still exfiltrate data through an allowed API. Production systems also need scoped credentials, request-level policy, approvals, audit logs, rate limits, and hardened proxy infrastructure.
+
+See the full [security model](https://sunwood-ai-labs.github.io/agent-egress-lab/guide/security-model) and [security policy](./SECURITY.md).
+
+## 📚 Documentation
+
+- [Getting started](https://sunwood-ai-labs.github.io/agent-egress-lab/guide/getting-started)
+- [Security model](https://sunwood-ai-labs.github.io/agent-egress-lab/guide/security-model)
+- [Offline Playwright E2E](https://sunwood-ai-labs.github.io/agent-egress-lab/guide/offline-e2e)
+- [v0.1.0 release notes](https://sunwood-ai-labs.github.io/agent-egress-lab/releases/v0.1.0)
+- [v0.1.0 walkthrough](https://sunwood-ai-labs.github.io/agent-egress-lab/guide/articles/v0.1.0-walkthrough)
+
+## 🗂️ Repository layout
+
+```text
+compose.yaml                 Default-deny agent and allowlisted proxy
+offline-e2e.compose.yaml     Internal-only Playwright test environment
+proxy.py                     Minimal CONNECT-only test proxy
+verify.ps1                   Three-control egress verification
+verify-offline-e2e.ps1       Internal-success/external-failure browser check
+report/                      Local verification report UI
+docs/                        Bilingual VitePress docs and architecture assets
+```
+
+## 🤝 Contributing
+
+Issues and pull requests are welcome. Read [`CONTRIBUTING.md`](./CONTRIBUTING.md) before proposing a change, and report security concerns through the private process in [`SECURITY.md`](./SECURITY.md).
+
+## 📄 License
+
+Released under the [MIT License](./LICENSE).

@@ -1,3 +1,5 @@
+name: agent-egress-lab-offline-e2e
+
 services:
   local-app:
     image: nginx:1.29-alpine

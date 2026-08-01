@@ -1,3 +1,9 @@
 output/
 __pycache__/
 artifacts/
+docs/node_modules/
+docs/.vitepress/cache/
+docs/.vitepress/dist/
+.DS_Store
+Thumbs.db
+tmp/*.png
